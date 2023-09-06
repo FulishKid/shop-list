@@ -30,9 +30,3 @@ function addItem(item) {
     itemInput.value = '';
   } else alert('Field is empty');
 }
-function deleteItem(item) {
-  console.log(item.target.className);
-  if (item.target.className === 'remove-item btn-link text-red') {
-    item.target.remove();
-  }
-}
