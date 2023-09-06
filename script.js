@@ -4,16 +4,12 @@ const itemList = document.getElementById('item-list');
 const clear = document.getElementById('clear');
 const filter = document.getElementById('filter');
 
-//event listeners
-// const tryIt = (e) => {
-//   e.preventDefault();
-//   console.log(e.target);
-// };
-
 itemForm.addEventListener('submit', addItem);
 itemList.addEventListener('click', deleteItem);
 clear.addEventListener('click', deleteAllItems);
+filter.addEventListener('input', filterItems);
 checkForItemList();
+
 function addItem(item) {
   item.preventDefault();
 
@@ -60,4 +56,14 @@ function checkForItemList() {
     filter.style.display = 'block';
     clear.style.display = 'block';
   }
+}
+function filterItems(el) {
+  const items = itemList.querySelectorAll('li');
+  const text = el.target.value.toLowerCase();
+  items.forEach((item) => {
+    const itemName = item.firstChild.textContent.toLowerCase();
+    if (itemName.indexOf(text) != -1) {
+      item.style.display = 'flex';
+    } else item.style.display = 'none';
+  });
 }
