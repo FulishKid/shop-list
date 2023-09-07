@@ -7,7 +7,13 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+.list-edit {
+  background-color: #e5e5e5;
+}
+.btn-edit {
+  background-color: rgb(253, 196, 89) !important;
+  padding: 10px 13px !important;
+}
 body {
   font-family: 'Poppins', sans-serif;
   font-size: 16px;

@@ -3,53 +3,142 @@ const itemInput = document.getElementById('item-input');
 const itemList = document.getElementById('item-list');
 const clear = document.getElementById('clear');
 const filter = document.getElementById('filter');
+const formBtn = itemForm.querySelector('button');
+let isEdit = false;
 
-itemForm.addEventListener('submit', addItem);
-itemList.addEventListener('click', deleteItem);
-clear.addEventListener('click', deleteAllItems);
-filter.addEventListener('input', filterItems);
-checkForItemList();
-
-function addItem(item) {
+function startApp() {
+  itemForm.addEventListener('submit', onItemSubmit);
+  itemList.addEventListener('click', onClickItem);
+  clear.addEventListener('click', deleteAllItems);
+  filter.addEventListener('input', filterItems);
+  document.addEventListener('DOMContentLoaded', loadItemsFromLocalStorage);
+  checkForItemList();
+  inputFocus();
+}
+function onItemSubmit(item) {
+  let inputValue = itemInput.value;
   item.preventDefault();
 
-  if (itemInput.value) {
-    const li = document.createElement('li');
-    li.appendChild(document.createTextNode(itemInput.value));
+  if (inputValue) {
+    if (isEdit) {
+      const editedItem = document.querySelector('.list-edit');
+      if (ifItemExist(inputValue)) {
+        alert('This item already exist!');
+        return;
+      }
+      const itemsFromStorage = getItemFromLocalStorage();
+      const indexOfItem = itemsFromStorage.indexOf(editedItem.textContent);
+      itemsFromStorage[indexOfItem] = inputValue;
+      localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+      while (itemList.firstChild) {
+        itemList.firstChild.remove();
+      }
+      loadItemsFromLocalStorage();
 
-    const btn = document.createElement('button');
-    btn.className = 'remove-item btn-link text-red';
+      isEdit = false;
+      return;
+    }
+    if (ifItemExist(inputValue)) {
+      alert('This item already exist!');
+      return;
+    }
+    addItemToDOM(inputValue);
+    addItemToLocalStorage(inputValue);
+    //creating an item an adding to the item list
 
-    const i = document.createElement('i');
-    i.className = 'fa-solid fa-xmark';
-
-    btn.appendChild(i);
-    li.appendChild(btn);
-    itemList.appendChild(li);
     checkForItemList();
     itemInput.value = '';
   } else alert('Field is empty');
+}
+function addItemToDOM(item) {
+  const li = document.createElement('li');
+  li.appendChild(document.createTextNode(item));
+
+  const btn = document.createElement('button');
+  btn.className = 'remove-item btn-link text-red';
+
+  const i = document.createElement('i');
+  i.className = 'fa-solid fa-xmark';
+
+  btn.appendChild(i);
+  li.appendChild(btn);
+  itemList.appendChild(li);
+}
+function getItemFromLocalStorage() {
+  let itemsFromStorage;
+
+  if (localStorage.getItem('items') === null) {
+    itemsFromStorage = [];
+  } else {
+    itemsFromStorage = JSON.parse(localStorage.getItem('items'));
+  }
+  return itemsFromStorage;
+}
+function addItemToLocalStorage(item) {
+  const itemsFromStorage = getItemFromLocalStorage();
+
+  // add to itemsFromStorage an item
+  itemsFromStorage.push(item);
+  //add to local storage an item
+  localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+}
+function loadItemsFromLocalStorage() {
+  const items = getItemFromLocalStorage();
+  items.forEach((item) => addItemToDOM(item));
+  checkForItemList();
+}
+function onClickItem(e) {
+  deleteItem(e);
+  if (e.target.tagName === 'LI') {
+    if (e.target.classList.contains('list-edit')) {
+      exitEditMode();
+    } else {
+      isEdit = true;
+      itemList
+        .querySelectorAll('li')
+        .forEach((i) => i.classList.remove('list-edit'));
+      e.target.classList.add('list-edit');
+      formBtn.innerHTML = '<i class ="fa-solid fa-pen"></i> Update item';
+      formBtn.classList.add('btn-edit');
+      itemInput.value = e.target.textContent;
+    }
+  }
 }
 
 /**
  *  @param {EventListenerOrEventListenerObject} el
  */
 function deleteItem(el) {
+  //removing from the DOM
   if (el.target.parentElement.tagName === 'BUTTON') {
-    el.target.parentElement.parentElement.remove();
-  }
-  if (!itemList.firstChild) {
+    const item = el.target.parentElement.parentElement;
+    item.remove();
+    // removing from local storage
+    const itemsFromStorage = getItemFromLocalStorage();
+    const indexOfItem = itemsFromStorage.indexOf(item.textContent);
+    itemsFromStorage.splice(indexOfItem, 1);
+    localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+
     checkForItemList();
   }
 }
-function deleteAllItems(el) {
+function deleteAllItems() {
   while (itemList.firstChild) {
     itemList.firstChild.remove();
   }
+  localStorage.removeItem('items');
   checkForItemList();
 }
 function checkForItemList() {
-  if (!itemList.firstChild) {
+  itemInput.value = '';
+  formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+  formBtn.classList.remove('btn-edit');
+  if (isEdit) {
+    // const itemOnEdit = document.querySelector('.list-edit');
+    // ifItemExist.classList.remove('list-edit');
+  }
+
+  if (!itemList.firstElementChild) {
     filter.style.display = 'none';
     clear.style.display = 'none';
   } else {
@@ -67,3 +156,26 @@ function filterItems(el) {
     } else item.style.display = 'none';
   });
 }
+function ifItemExist(item) {
+  return getItemFromLocalStorage().includes(item);
+}
+function inputFocus() {
+  itemInput.addEventListener(
+    'focus',
+    (e) => (e.target.style.border = '1px solid green')
+  );
+  itemInput.addEventListener(
+    'blur',
+    (e) => (e.target.style.border = '1px solid #ccc')
+  );
+}
+function exitEditMode() {
+  const editedItem = document.querySelector('.list-edit');
+  if (editedItem) {
+    editedItem.classList.remove('list-edit');
+  }
+  checkForItemList();
+  isEdit = false;
+}
+
+startApp();
