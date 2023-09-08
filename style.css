@@ -123,6 +123,7 @@ header h1 {
   display: flex;
   align-items: center;
   word-wrap: break-word;
+  user-select: none;
   justify-content: space-between;
   width: 45%;
   border: 1px solid #ccc;
