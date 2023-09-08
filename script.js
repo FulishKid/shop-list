@@ -15,41 +15,52 @@ function startApp() {
   checkForItemList();
   inputFocus();
 }
-function onItemSubmit(item) {
-  let inputValue = itemInput.value;
-  item.preventDefault();
+function onItemSubmit(event) {
+  event.preventDefault();
+  const inputValue = itemInput.value;
 
-  if (inputValue) {
-    if (isEdit) {
-      const editedItem = document.querySelector('.list-edit');
-      if (ifItemExist(inputValue)) {
-        alert('This item already exist!');
-        return;
-      }
-      const itemsFromStorage = getItemFromLocalStorage();
-      const indexOfItem = itemsFromStorage.indexOf(editedItem.textContent);
-      itemsFromStorage[indexOfItem] = inputValue;
-      localStorage.setItem('items', JSON.stringify(itemsFromStorage));
-      while (itemList.firstChild) {
-        itemList.firstChild.remove();
-      }
-      loadItemsFromLocalStorage();
+  if (!inputValue) {
+    alert('Field is empty');
+    return;
+  }
 
-      isEdit = false;
-      return;
-    }
-    if (ifItemExist(inputValue)) {
-      alert('This item already exist!');
-      return;
-    }
-    addItemToDOM(inputValue);
-    addItemToLocalStorage(inputValue);
-    //creating an item an adding to the item list
-
-    checkForItemList();
-    itemInput.value = '';
-  } else alert('Field is empty');
+  if (isEdit) {
+    handleEdit(inputValue);
+  } else {
+    handleAdd(inputValue);
+  }
 }
+
+function handleEdit(inputValue) {
+  const editedItem = document.querySelector('.list-edit');
+  const itemsFromStorage = getItemFromLocalStorage();
+  const indexOfItem = itemsFromStorage.indexOf(editedItem.textContent);
+
+  if (ifItemExist(inputValue) && inputValue !== editedItem.textContent) {
+    alert('This item already exists!');
+    return;
+  }
+
+  itemsFromStorage[indexOfItem] = inputValue;
+  localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+  while (itemList.firstChild) {
+    itemList.firstChild.remove();
+  }
+  loadItemsFromLocalStorage();
+  exitEditMode();
+}
+
+function handleAdd(inputValue) {
+  if (ifItemExist(inputValue)) {
+    alert('This item already exists!');
+    return;
+  }
+  addItemToDOM(inputValue);
+  addItemToLocalStorage(inputValue);
+  checkForItemList();
+  itemInput.value = '';
+}
+
 function addItemToDOM(item) {
   const li = document.createElement('li');
   li.appendChild(document.createTextNode(item));
@@ -105,9 +116,6 @@ function onClickItem(e) {
   }
 }
 
-/**
- *  @param {EventListenerOrEventListenerObject} el
- */
 function deleteItem(el) {
   //removing from the DOM
   if (el.target.parentElement.tagName === 'BUTTON') {
