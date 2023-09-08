@@ -63,7 +63,11 @@ function handleAdd(inputValue) {
 
 function addItemToDOM(item) {
   const li = document.createElement('li');
-  li.appendChild(document.createTextNode(item));
+
+  // creating a wraper to add some space between item and x btn
+  const div = document.createElement('div');
+  div.style.width = '90%';
+  div.appendChild(document.createTextNode(item));
 
   const btn = document.createElement('button');
   btn.className = 'remove-item btn-link text-red';
@@ -71,6 +75,7 @@ function addItemToDOM(item) {
   const i = document.createElement('i');
   i.className = 'fa-solid fa-xmark';
 
+  li.appendChild(div);
   btn.appendChild(i);
   li.appendChild(btn);
   itemList.appendChild(li);
@@ -100,18 +105,20 @@ function loadItemsFromLocalStorage() {
 }
 function onClickItem(e) {
   deleteItem(e);
-  if (e.target.tagName === 'LI') {
-    if (e.target.classList.contains('list-edit')) {
+
+  const item = e.target.tagName === 'DIV' ? e.target.parentElement : e.target;
+  if (item.tagName === 'LI') {
+    if (item.classList.contains('list-edit')) {
       exitEditMode();
     } else {
       isEdit = true;
       itemList
         .querySelectorAll('li')
         .forEach((i) => i.classList.remove('list-edit'));
-      e.target.classList.add('list-edit');
+      item.classList.add('list-edit');
       formBtn.innerHTML = '<i class ="fa-solid fa-pen"></i> Update item';
       formBtn.classList.add('btn-edit');
-      itemInput.value = e.target.textContent;
+      itemInput.value = item.textContent;
     }
   }
 }
@@ -120,6 +127,7 @@ function deleteItem(el) {
   //removing from the DOM
   if (el.target.parentElement.tagName === 'BUTTON') {
     const item = el.target.parentElement.parentElement;
+    console.log(item);
     item.remove();
     // removing from local storage
     const itemsFromStorage = getItemFromLocalStorage();
@@ -128,6 +136,7 @@ function deleteItem(el) {
     localStorage.setItem('items', JSON.stringify(itemsFromStorage));
 
     checkForItemList();
+    exitEditMode();
   }
 }
 function deleteAllItems() {
@@ -136,15 +145,10 @@ function deleteAllItems() {
   }
   localStorage.removeItem('items');
   checkForItemList();
+  exitEditMode();
 }
 function checkForItemList() {
   itemInput.value = '';
-  formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
-  formBtn.classList.remove('btn-edit');
-  if (isEdit) {
-    // const itemOnEdit = document.querySelector('.list-edit');
-    // ifItemExist.classList.remove('list-edit');
-  }
 
   if (!itemList.firstElementChild) {
     filter.style.display = 'none';
@@ -177,12 +181,14 @@ function inputFocus() {
     (e) => (e.target.style.border = '1px solid #ccc')
   );
 }
-function exitEditMode() {
-  const editedItem = document.querySelector('.list-edit');
+function exitEditMode(editedItem = document.querySelector('.list-edit')) {
   if (editedItem) {
+    console.log(editedItem.textContent);
     editedItem.classList.remove('list-edit');
   }
-  checkForItemList();
+  formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+  formBtn.classList.remove('btn-edit');
+  itemInput.value = '';
   isEdit = false;
 }
 
