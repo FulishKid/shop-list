@@ -120,6 +120,8 @@ header h1 {
 
 .items li {
   display: flex;
+  align-items: center;
+  word-break: normal;
   justify-content: space-between;
   width: 45%;
   border: 1px solid #ccc;
