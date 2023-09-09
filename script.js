@@ -58,6 +58,7 @@ function handleAdd(inputValue) {
   addItemToDOM(inputValue);
   addItemToLocalStorage(inputValue);
   itemInput.value = '';
+  checkForItemList();
 }
 
 function addItemToDOM(item) {
